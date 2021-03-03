@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kube-backend
+  labels:
+    app: backend
+spec:
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: kube-backend
+          image: registry.rg-10.hm:8082/kube-backend:latest
+          ports:
+            - containerPort: 3000
+      imagePullSecrets:
+        - name: reg-secret
+
+---
+# Internal service
+apiVersion: v1
+kind: Service
+metadata:
+  name: kube-backend-internal-service
+spec:
+  selector:
+    app: backend
+  ports:
+    - port: 3000
+      protocol: TCP
+      targetPort: 3000
+
+---
+# External service
+apiVersion: v1
+kind: Service
+metadata:
+  name: kube-backend-external-service
+spec:
+  selector:
+    app: backend
+  type: LoadBalancer
+  ports:
+    - port: 3000
+      protocol: TCP
+      targetPort: 3000
+  externalIPs:
+    - 10.0.128.139
